@@ -1,13 +1,4 @@
-#include <inttypes.h>
-
-#define SIZE 32 // 1024 bit / 32 bits per int
-#define SIZE_BYTES 128 // SIZE * 4 bytes per int
-#define HIGHBIT 0x80000000
-#define LOWBIT  0x00000001
-
-#define EQ 0
-#define GT 1
-#define LT -1
+#include "gcd.h"
 
 __device__ void shiftL1(uint32_t num[]) {
    int flag = 0, flagn = 0;
@@ -79,7 +70,8 @@ __device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
 
 // Binary GCD algorithm
 // requires num1 > 0 and num2 > 0
-// sets either num1 or num2 to the gcd and returns the pointer to that num
+// sets either num1 or num2 to the 1 if gcd == 1 or some number >1 if gcd >1 and
+// returns the pointer to whichever num was set
 __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
    int shift, compare;
 	
@@ -106,7 +98,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		cuSubtract(num2, num1);
 	} while (1);
 	
-	while (shift--)
+	if (shift)
 	   shiftL1(num1);
 	
 	return num1;
