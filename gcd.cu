@@ -123,31 +123,29 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res) {
 	int countBytes = 1 + ((count - 1) / 8);
 	
 	if (threadIdx.x == 0) {
-	    cudaMemset(ONE, 0, SIZE_BYTES);
+	    memset(ONE, 0, SIZE_BYTES);
 		 ONE[0] = 1;
 	}
 	__syncthreads();
 	
 	char *row;
-   cudaMalloc(&row, countBytes);
-	cudaMemset(row, 0, countBytes);
+   row = (char *) malloc(countBytes);
+	memset(row, 0, countBytes);
 	
 	uint32_t cur[SIZE];
 	uint32_t other[SIZE];
 	
    // do calc
 	for (int i = ndx + 1; i < count; i++) {
-		cudaMemcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES,
-		 cudaMemcpyDeviceToDevice);
-		cudaMemcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES,
-		 cudaMemcpyDeviceToDevice);
+		memcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES);
+		memcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES);
 		
 		if (cmp(gcd(cur, other), ONE) == GT)
 		   row[ndx / 8] |= 1 << (ndx % 8);
 	}
 	
 	// write row
-	cudaMemcpy(res + ndx*countBytes, row, countBytes, cudaMemcpyDeviceToDevice);
+	memcpy(res + ndx*countBytes, row, countBytes);
 	
-	cudaFree(row);
+	free(row);
 }
