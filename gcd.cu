@@ -41,7 +41,7 @@ __device__ void shiftR1(uint32_t num[]) {
 
 // returns num1 (LT,EQ,GT)? num2
 __device__ int cmp(uint32_t num1[], uint32_t num2[]) {
-   for (int i = SIZE - 1; i >= 0; i--) {
+   for (int i = SIZE - 1; i >= 0; i--)
 	   if (num1[i] != num2[i])
 		   return (num1[i] == min(num1[i], num2[i])) ? LT : GT;
 	
@@ -49,8 +49,8 @@ __device__ int cmp(uint32_t num1[], uint32_t num2[]) {
 }
 
 // requires that num1 >= num2, num1 -= num2
-__device__ void cuSubstract(uint32_t num1[], uint32_t num2[]) {
-   for (int i = 0; i < SIZE: i++) {
+__device__ void cuSubtract(uint32_t num1[], uint32_t num2[]) {
+   for (int i = 0; i < SIZE; i++) {
 	   if (num2[i] == min(num1[i], num2[i])) {
 		   // normal subtraction
 			num1[i] = num1[i] - num2[i];
@@ -71,7 +71,7 @@ __device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
    int compare;
 	while ((compare = cmp(num1, num2)) != EQ) {
 	   if (compare == GT)
-		   cuSubstract(num1, num2);
+		   cuSubtract(num1, num2);
 		else
 		   cuSubtract(num2, num1);
 	}
@@ -98,7 +98,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		compare = cmp(num1, num2);
 		if (compare == EQ)
 		   break;
-		else (compare == GT) {
+		else if (compare == GT) {
 		   uint32_t *t = num1;
 			num1 = num2;
 			num2 = t;
@@ -123,7 +123,7 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res) {
 	int countBytes = 1 + ((count - 1) / 8);
 	
 	if (threadIdx.x == 0) {
-	    cudaMemset(row, 0, SIZE_BYTES);
+	    cudaMemset(ONE, 0, SIZE_BYTES);
 		 ONE[0] = 1;
 	}
 	__syncthreads();
@@ -132,18 +132,17 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res) {
    cudaMalloc(&row, countBytes);
 	cudaMemset(row, 0, countBytes);
 	
-	uint32_t this[SIZE];
+	uint32_t cur[SIZE];
 	uint32_t other[SIZE];
 	
    // do calc
 	for (int i = ndx + 1; i < count; i++) {
-		cudaMemcpy(nums + ndx * SIZE_BYTES, this, SIZE_BYTES,
+		cudaMemcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES,
 		 cudaMemcpyDeviceToDevice);
 		cudaMemcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES,
 		 cudaMemcpyDeviceToDevice);
 		
-		uint32_t *GCD = gcd(this, other);
-		if (cmp(GCD, ONE) == GT)
+		if (cmp(gcd(cur, other), ONE) == GT)
 		   row[ndx / 8] |= 1 << (ndx % 8);
 	}
 	
