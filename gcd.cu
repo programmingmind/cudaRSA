@@ -1,6 +1,7 @@
 #include <inttypes.h>
 
 #define SIZE 32 // 1024 bit / 32 bits per int
+#define SIZE_BYTES 128 // SIZE * 4 bytes per int
 #define HIGHBIT 0x80000000
 #define LOWBIT  0x00000001
 
@@ -109,4 +110,45 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 	   shiftL1(num1);
 	
 	return num1;
+}
+
+// count is the number of big nums in nums
+// res represents a 2 dimensional matrix with at least count bits for each side
+// should have count number of threads running, each responsible for 1 row/col
+// res will be return as a top diagonal matrix
+__global__ void findGCDs(uint32_t *nums, int count, char *res) {
+   __shared__ uint32_t ONE[SIZE];
+	
+   int ndx = blockIdx.x * blockDim.x + threadIdx.x; // == offset in bits
+	int countBytes = 1 + ((count - 1) / 8);
+	
+	if (threadIdx.x == 0) {
+	    cudaMemset(row, 0, SIZE_BYTES);
+		 ONE[0] = 1;
+	}
+	__syncthreads();
+	
+	char *row;
+   cudaMalloc(&row, countBytes);
+	cudaMemset(row, 0, countBytes);
+	
+	uint32_t this[SIZE];
+	uint32_t other[SIZE];
+	
+   // do calc
+	for (int i = ndx + 1; i < count; i++) {
+		cudaMemcpy(nums + ndx * SIZE_BYTES, this, SIZE_BYTES,
+		 cudaMemcpyDeviceToDevice);
+		cudaMemcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES,
+		 cudaMemcpyDeviceToDevice);
+		
+		uint32_t *GCD = gcd(this, other);
+		if (cmp(GCD, ONE) == GT)
+		   row[ndx / 8] |= 1 << (ndx % 8);
+	}
+	
+	// write row
+	cudaMemcpy(res + ndx*countBytes, row, countBytes, cudaMemcpyDeviceToDevice);
+	
+	cudaFree(row);
 }
