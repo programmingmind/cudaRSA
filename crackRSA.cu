@@ -53,7 +53,7 @@ int main (int argc, char * argv[]) {
    //Lets gcd
    for (int offset = 0;  offset < numKeys; offset += WORK_SIZE) {
       // <<<dimGrid, dimBlock>>>
-      findGCDs<<<1 + ((numKeys - 1) / SIZE), SIZE>>>(numbers, numKeys, res, offset);
+      findGCDs<<<1 + ((numKeys - 1) / SIZE), SIZE>>>(cudaNums, numKeys, cudaRes, offset);
    }
 
    cudaMemcpy(res, cudaRes, numKeys * countBytes, cudaMemcpyDeviceToHost);
