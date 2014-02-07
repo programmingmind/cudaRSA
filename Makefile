@@ -2,13 +2,14 @@ NVFLAGS=-O3 -g -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code
 CCFLAGS=-O3
 # list .c and .cu source files here
 CUDAFILES=gcd.cu 
-CPUFILES=classbitshifts.c
+CPUFILES=cpu.c
+LDFLAGS=-lgmp
 
 cuda: $(CUDAFILES) 
 	nvcc $(NVFLAGS) -o rsa_cuda $^ 
 
 cpu: $(CPUFILES) 
-	gcc $(CCFLAGS) -o rsa_cpu $^ 
+	gcc $(CCFLAGS) -o rsa_cpu $^ $(LDFLAGS)
 
 clean: 
 	rm -f *.o rsa_cuda rsa_cpu
