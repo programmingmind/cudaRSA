@@ -15,14 +15,14 @@ int cmp(uint32_t num1[], uint32_t num2[]);
 void Substract(uint32_t num1[], uint32_t num2[]);
 void slow_gcd(uint32_t num1[], uint32_t num2[]);
 uint32_t* gcd(uint32_t *num1, uint32_t *num2);
-void findGCDs(uint32_t *nums, int count, char *res);
+void findGCDs(uint32_t *nums, int count, char *res, int offset);
 
 typedef struct bigNum {
    uint32_t num[SIZE];
 } bigNum;
 
 void printCommon(int numKeys, char *res) {
-   int countBytes = (1 + ((numKeys - 1) /8);
+   int countBytes = 1 + ((numKeys - 1) /8);
    int ndx = 0;
    
    for (int i = 0; i < numKeys; i++)
@@ -59,7 +59,9 @@ int main (int argc, char * argv[]) {
    fclose(fp);
    
    //Lets gcd
-   findGCDs(numbers, numKeys, res);
+   for (int offset = 0;  offset < numKeys; offset += WORK_SIZE) {
+   	findGCDs(numbers, numKeys, res, offset);
+   }
    printCommon(numKeys, res);
    
    return 0; //!
@@ -168,37 +170,33 @@ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 	return num1;
 }
 
+bool greaterOne(uint32_t *num) {
+	for (int i = 0; i < SIZE; i++)
+		if (i ? num[i] : num[i] > 1)
+			return true;
+	return false;
+}
+
 // count is the number of big nums in nums
 // res represents a 2 dimensional matrix with at least count bits for each side
 // should have count number of threads running, each responsible for 1 row/col
 // res will be return as a top diagonal matrix
-void findGCDs(uint32_t *nums, int count, char *res) {
-   uint32_t ONE[SIZE];
-	
-	int countBytes = 1 + ((count - 1) / 8);
-	
-	memset(ONE, 0, SIZE_BYTES);
-   ONE[0] = 1;
-	
-	char *row;
-   row = malloc(countBytes);
-	
-	uint32_t cur[SIZE];
+void findGCDs(uint32_t *nums, int count, char *res, int offset) {	
+   uint32_t cur[SIZE];
 	uint32_t other[SIZE];
-	
-   // do calc
-   for (int ndx = 0; ndx < count; ndx++) {
-      memset(row, 0, countBytes);
-      for (int i = ndx + 1; i < count; i++) {
-         memcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES);
-         memcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES);
-         
-         if (cmp(gcd(cur, other), ONE) == GT)
-            row[ndx / 8] |= 1 << (ndx % 8);
-      }
-      // write row
-      memcpy(res + ndx*countBytes, row, countBytes);
-   }
-   
-	free(row);
+
+	for (int ndx = 0; ndx < count; ndx++) {
+		int resOff = ndx * (1 + ((count - 1) / 8));
+
+		// do calc
+	   int i = ndx + offset + 1;
+	   int limit = min(i + WORK_SIZE, count);
+		for (; i < limit; i++) {
+			memcpy(cur, nums + ndx * SIZE_BYTES, SIZE_BYTES);
+			memcpy(other, nums + i * SIZE_BYTES, SIZE_BYTES);
+			
+			if (greaterOne(gcd(cur, other)))
+				res[resOff + i / 8] |= 1 << (i % 8);
+		}
+	}  
 }
