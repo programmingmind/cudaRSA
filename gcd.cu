@@ -108,7 +108,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 // res represents a 2 dimensional matrix with at least count bits for each side
 // should have count number of threads running, each responsible for 1 row/col
 // res will be return as a top diagonal matrix
-__global__ void findGCDs(uint32_t *nums, int count, char *res) {
+__global__ void findGCDs(uint32_t *nums, int count, char *res, int offset) {
    __shared__ uint32_t ONE[SIZE];
 	
    int ndx = blockIdx.x * blockDim.x + threadIdx.x; // == offset in bits
@@ -120,24 +120,22 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res) {
 	}
 	__syncthreads();
 	
-	char *row;
-   row = (char *) malloc(countBytes);
-	memset(row, 0, countBytes);
+	char row[WORK_BYTES];
+	memset(row, 0, WORK_BYTES);
 	
 	uint32_t cur[SIZE];
 	uint32_t other[SIZE];
 	
    // do calc
-	for (int i = ndx + 1; i < count; i++) {
+   int start = ndx + 1 + offset;
+	for (int i = 0; i < WORK_SIZE && start + i < count; i++) {
 		memcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES);
 		memcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES);
 		
 		if (cmp(gcd(cur, other), ONE) == GT)
-		   row[ndx / 8] |= 1 << (ndx % 8);
+		   row[i / 8] |= 1 << (i % 8);
 	}
 	
 	// write row
-	memcpy(res + ndx*countBytes, row, countBytes);
-	
-	free(row);
+	memcpy(res + ndx*countBytes, row, min(WORK_BYTES, 1 + ((count - start - 1) / 8)));
 }

@@ -8,10 +8,13 @@
 #define HIGHBIT 0x80000000
 #define LOWBIT  0x00000001
 
+#define WORK_BYTES 2
+#define WORK_SIZE (WORK_BYTES * 8)
+
 #define EQ 0
 #define GT 1
 #define LT -1
 
-__global__ void findGCDs(uint32_t *nums, int count, char *res);
+__global__ void findGCDs(uint32_t *nums, int count, char *res, int offset);
 
 #endif
