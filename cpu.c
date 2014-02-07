@@ -53,7 +53,7 @@ int main (int argc, char * argv[]) {
    
    if (argc != 3) {
       printf("error, syntax is %s <file name> <num keys>\n", argv[0]);
-      return;
+      return 0;
    }
    
    //expects file name as first command line parameter
@@ -75,6 +75,9 @@ int main (int argc, char * argv[]) {
    	findGCDs(numbers, numKeys, res, offset);
    }
    printCommon(numKeys, res);
+
+   free(numbers);
+   free(res);
    
    return 0; //!
 }
