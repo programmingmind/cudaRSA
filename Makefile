@@ -15,6 +15,9 @@ cudaHome: $(CUDAFILES)
 	nvcc $(NVFLAGS) -o rsa_cuda $^ $(LDFLAGS) 
 
 cpu: $(CPUFILES) 
+	gcc $(CCFLAGS) -std=c99 -o rsa_cpu $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Wl,-rpath=$(LIBPATH)
+
+cpuHome: $(CPUFILES) 
 	gcc $(CCFLAGS) -o rsa_cpu $^ $(LDFLAGS)
 
 clean: 
