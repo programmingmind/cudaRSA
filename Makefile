@@ -5,9 +5,14 @@ CCFLAGS=-O3
 CUDAFILES=gcd.cu crackRSA.cu
 CPUFILES=cpu.c
 LDFLAGS=-lgmp
+LIBPATH=/home/clupo/gmp/lib
+INCPATH=/home/clupo/gmp/include
 
 cuda: $(CUDAFILES) 
-	nvcc $(NVFLAGS) -o rsa_cuda $^ 
+	nvcc $(NVFLAGS) -o rsa_cuda $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Xlinker -rpath -Xlinker $(LIBPATH)
+
+cudaHome: $(CUDAFILES)
+	nvcc $(NVFLAGS) -o rsa_cuda $^ $(LDFLAGS) 
 
 cpu: $(CPUFILES) 
 	gcc $(CCFLAGS) -o rsa_cpu $^ $(LDFLAGS)
