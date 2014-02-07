@@ -1,13 +1,4 @@
-#include <inttypes.h>
-
-#define SIZE 32 // 1024 bit / 32 bits per int
-#define SIZE_BYTES 128 // SIZE * 4 bytes per int
-#define HIGHBIT 0x80000000
-#define LOWBIT  0x00000001
-
-#define EQ 0
-#define GT 1
-#define LT -1
+#include "gcd.h"
 
 __device__ void shiftL1(uint32_t num[]) {
    int flag = 0, flagn = 0;
@@ -41,7 +32,7 @@ __device__ void shiftR1(uint32_t num[]) {
 
 // returns num1 (LT,EQ,GT)? num2
 __device__ int cmp(uint32_t num1[], uint32_t num2[]) {
-   for (int i = SIZE - 1; i >= 0; i--) {
+   for (int i = SIZE - 1; i >= 0; i--)
 	   if (num1[i] != num2[i])
 		   return (num1[i] == min(num1[i], num2[i])) ? LT : GT;
 	
@@ -49,8 +40,8 @@ __device__ int cmp(uint32_t num1[], uint32_t num2[]) {
 }
 
 // requires that num1 >= num2, num1 -= num2
-__device__ void cuSubstract(uint32_t num1[], uint32_t num2[]) {
-   for (int i = 0; i < SIZE: i++) {
+__device__ void cuSubtract(uint32_t num1[], uint32_t num2[]) {
+   for (int i = 0; i < SIZE; i++) {
 	   if (num2[i] == min(num1[i], num2[i])) {
 		   // normal subtraction
 			num1[i] = num1[i] - num2[i];
@@ -71,7 +62,7 @@ __device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
    int compare;
 	while ((compare = cmp(num1, num2)) != EQ) {
 	   if (compare == GT)
-		   cuSubstract(num1, num2);
+		   cuSubtract(num1, num2);
 		else
 		   cuSubtract(num2, num1);
 	}
@@ -79,7 +70,8 @@ __device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
 
 // Binary GCD algorithm
 // requires num1 > 0 and num2 > 0
-// sets either num1 or num2 to the gcd and returns the pointer to that num
+// sets either num1 or num2 to the 1 if gcd == 1 or some number >1 if gcd >1 and
+// returns the pointer to whichever num was set
 __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
    int shift, compare;
 	
@@ -98,7 +90,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		compare = cmp(num1, num2);
 		if (compare == EQ)
 		   break;
-		else (compare == GT) {
+		else if (compare == GT) {
 		   uint32_t *t = num1;
 			num1 = num2;
 			num2 = t;
@@ -106,7 +98,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		cuSubtract(num2, num1);
 	} while (1);
 	
-	while (shift--)
+	if (shift)
 	   shiftL1(num1);
 	
 	return num1;
@@ -123,32 +115,29 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res) {
 	int countBytes = 1 + ((count - 1) / 8);
 	
 	if (threadIdx.x == 0) {
-	    cudaMemset(row, 0, SIZE_BYTES);
+	    memset(ONE, 0, SIZE_BYTES);
 		 ONE[0] = 1;
 	}
 	__syncthreads();
 	
 	char *row;
-   cudaMalloc(&row, countBytes);
-	cudaMemset(row, 0, countBytes);
+   row = (char *) malloc(countBytes);
+	memset(row, 0, countBytes);
 	
-	uint32_t this[SIZE];
+	uint32_t cur[SIZE];
 	uint32_t other[SIZE];
 	
    // do calc
 	for (int i = ndx + 1; i < count; i++) {
-		cudaMemcpy(nums + ndx * SIZE_BYTES, this, SIZE_BYTES,
-		 cudaMemcpyDeviceToDevice);
-		cudaMemcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES,
-		 cudaMemcpyDeviceToDevice);
+		memcpy(nums + ndx * SIZE_BYTES, cur, SIZE_BYTES);
+		memcpy(nums + i * SIZE_BYTES, other, SIZE_BYTES);
 		
-		uint32_t *GCD = gcd(this, other);
-		if (cmp(GCD, ONE) == GT)
+		if (cmp(gcd(cur, other), ONE) == GT)
 		   row[ndx / 8] |= 1 << (ndx % 8);
 	}
 	
 	// write row
-	cudaMemcpy(res + ndx*countBytes, row, countBytes, cudaMemcpyDeviceToDevice);
+	memcpy(res + ndx*countBytes, row, countBytes);
 	
-	cudaFree(row);
+	free(row);
 }
