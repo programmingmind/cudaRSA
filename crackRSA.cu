@@ -1,6 +1,6 @@
 // driver for rsa cracking
 
-#include <gmp.h>
+#include <stdio.h>
 
 #include "common.h"
 #include "gcd.h"
@@ -9,34 +9,20 @@
 int main (int argc, char * argv[]) {
    char *res, *cudaRes;
    uint32_t *numbers, *cudaNums;
-   int countBytes;
-   mpz_t tempNum;
-   mpz_init(tempNum);
    
-   if (argc != 3) {
-      printf("error, syntax is %s <file name> <num keys>", argv[0]);
+   if (argc != 2) {
+      printf("error, syntax is %s <file name>\n", argv[0]);
+      return 0;
    }
-   
-   //expects file name as first command line parameter
-   FILE *fp = fopen(argv[1], "r");
-   //second command line parameter is the numer of keys in the file
-   int numKeys = atoi(argv[2]);
-   countBytes = 1 + ((numKeys - 1) /8);
-   int numSize = SIZE * sizeof(uint32_t) * numKeys;
 
-   numbers = (uint32_t *) malloc(numSize);
+   int numKeys = readFile(argv[1], &numbers, &res);
+   int countBytes = 1 + ((numKeys - 1) /8);
+   int numSize = SIZE_BYTES * numKeys;
+
    cudaMalloc(&cudaNums, numSize);
-
-   res = (char *) calloc(numKeys, countBytes);
    cudaMalloc(&cudaRes, numKeys * countBytes);
    cudaMemset(cudaRes, 0, numKeys * countBytes);
    
-   for (int i = 0; i < numKeys; i ++) {
-      gmp_fscanf(fp, "%Zd\n", &tempNum);
-      mpz_export(numbers + i, NULL, -1, 4, -1, 0, tempNum);
-   }
-   fclose(fp);
-
    cudaMemcpy(cudaNums, numbers, numSize, cudaMemcpyHostToDevice);
    
    //Lets gcd
@@ -51,6 +37,9 @@ int main (int argc, char * argv[]) {
    cudaFree(cudaRes);
    
    printCommon(numKeys, res);
+
+   free(numbers);
+   free(res);
    
-   return 0; //!
+   return 0;
 }

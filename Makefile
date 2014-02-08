@@ -2,7 +2,7 @@ NVFLAGS=-O3 -g -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code
 CCFLAGS=-O3 -std=c99
 
 # list .c and .cu source files here
-CUDAFILES=gcd.cu crackRSA.cu common.cu
+CUDAFILES=gcd.cu crackRSA.cu common.c
 CPUFILES=cpu.c common.c
 LDFLAGS=-lgmp
 LIBPATH=/home/clupo/gmp/lib

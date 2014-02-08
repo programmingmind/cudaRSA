@@ -40,7 +40,8 @@ int readFile(const char *fileName, uint32_t **numbers, char **res) {
    *numbers = (uint32_t *) malloc(SIZE_BYTES * numKeys);
    *res = (char *) calloc(numKeys, countBytes);
    
-   for (int i = 0; i < numKeys; i ++) {
+   int i;
+   for (i = 0; i < numKeys; i ++) {
       gmp_fscanf(fp, "%Zd\n", &tempNum);
       mpz_export((*numbers) + i * SIZE, NULL, -1, 4, -1, 0, tempNum);
    }
