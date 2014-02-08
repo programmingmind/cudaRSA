@@ -2,19 +2,8 @@
 
 #include <gmp.h>
 
+#include "common.h"
 #include "gcd.h"
-
-void printCommon(int numKeys, char *res) {
-   int countBytes = 1 + ((numKeys - 1) /8);
-   int ndx = 0;
-   
-   for (int i = 0; i < numKeys; i++)
-      for (int j = 0; j < countBytes; j++, ndx++)
-         if (res[ndx])
-            for (int k = 0; k < 8; k++)
-               if (res[ndx] & (1 << k))
-                  printf("Keys %d %d share a factor\n", i, j*8 + k);
-}
 
 //Main function to read keys from file and then matrix, yeah!
 int main (int argc, char * argv[]) {
