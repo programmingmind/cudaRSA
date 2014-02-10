@@ -9,7 +9,7 @@
 #define HIGHBIT 0x80000000
 #define LOWBIT  0x00000001
 
-#define WORK_BYTES 2
+#define WORK_BYTES 8
 #define WORK_SIZE (WORK_BYTES * 8)
 
 #define EQ 0
