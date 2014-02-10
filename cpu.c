@@ -35,6 +35,8 @@ int main (int argc, char * argv[]) {
    
    printCommon(numKeys, res);
 
+   writeFiles("publicKeys", "privateKeys", numKeys, numbers, res);
+
    free(numbers);
    free(res);
    

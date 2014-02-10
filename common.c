@@ -49,3 +49,60 @@ int readFile(const char *fileName, uint32_t **numbers, char **res) {
    
    return numKeys;
 }
+
+void computePrivate(mpz_t pb1, mpz_t pb2, mpz_t *pk1, mpz_t *pk2) {
+   mpz_t common, q1, q2, e, t1, t2, tc, tot1, tot2;
+   mpz_inits(common, q1, q2, e, t1, t2, tc, tot1, tot2, NULL);
+
+   mpz_gcd(common, pb1, pb2);
+   mpz_cdiv_q(q1, pb1, common);
+   mpz_cdiv_q(q2, pb2, common);
+
+   mpz_sub_ui(t1, q1, 1);
+   mpz_sub_ui(t2, q2, 1);
+   mpz_sub_ui(tc, common, 1);
+
+   mpz_mul(tot1, t1, tc);
+   mpz_mul(tot2, t2, tc);
+
+   mpz_set_ui(e, 65537);
+
+   mpz_invert(*pk1, e, tot1);
+   mpz_invert(*pk2, e, tot2);
+}
+
+void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
+ uint32_t *keys, char *res) {
+
+   int i,j,k;
+   mpz_t k1, k2, pk1, pk2;
+
+   mpz_inits(k1, k2, pk1, pk2, NULL);
+
+   int countBytes = 1 + ((numKeys - 1) /8);
+   int ndx = 0;
+
+   FILE *pub = fopen(publicFile, "w");
+   FILE *priv = fopen(privateFile, "w");
+   
+   for (i = 0; i < numKeys; i++) {
+      for (j = 0; j < countBytes; j++, ndx++) {
+         if (res[ndx]) {
+            for (k = 0; k < 8; k++) {
+               if (res[ndx] & (1 << k)) {
+                  // i, j*8 + k
+                  mpz_import(k1, SIZE, -1, 4, -1, 0, keys + i * SIZE);
+                  mpz_import(k2, SIZE, -1, 4, -1, 0, keys + (j*8 + k) * SIZE);
+                  computePrivate(k1, k2, &pk1, &pk2);
+
+                  gmp_fprintf(pub, "%Zd\n%Zd\n", k1, k2);
+                  gmp_fprintf(priv, "%Zd\n%Zd\n", pk1, pk2);
+               }
+            }
+         }
+      }
+   }
+
+   fclose(pub);
+   fclose(priv);
+}
