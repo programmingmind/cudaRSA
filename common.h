@@ -20,7 +20,6 @@ int readFile(const char *fileName, uint32_t **numbers, char **res);
 
 void computePrivate(mpz_t pb1, mpz_t pb2, mpz_t *pk1, mpz_t *pk2);
 
-void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
- uint32_t *keys, char *res);
+void writeFiles(const char *privateFile,int numKeys,uint32_t *keys,char *res);
 
 #endif

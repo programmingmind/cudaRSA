@@ -57,8 +57,7 @@ void computePrivate(mpz_t pb1, mpz_t pb2, mpz_t *pk1, mpz_t *pk2) {
    mpz_invert(*pk2, e, tot2);
 }
 
-void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
- uint32_t *keys, char *res) {
+void writeFiles(const char *privateFile,int numKeys,uint32_t *keys,char *res) {
 
    int i,j,k;
    mpz_t k1, k2, pk1, pk2;
@@ -68,7 +67,6 @@ void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
    int countBytes = 1 + ((numKeys - 1) /8);
    int ndx = 0;
 
-   FILE *pub = fopen(publicFile, "w");
    FILE *priv = fopen(privateFile, "w");
    
    for (i = 0; i < numKeys; i++) {
@@ -82,8 +80,7 @@ void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
                   mpz_import(k2, SIZE, -1, 4, -1, 0, keys + (j*8 + k) * SIZE);
                   computePrivate(k1, k2, &pk1, &pk2);
 
-                  gmp_fprintf(pub, "%Zd\n%Zd\n", k1, k2);
-                  gmp_fprintf(priv, "%Zd\n%Zd\n", pk1, pk2);
+                  gmp_fprintf(priv, "%Zd:%Zd\n%Zd:%Zd\n", k1, pk1, k2, pk2);
                }
             }
          }
@@ -91,5 +88,4 @@ void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
    }
 
    fclose(pub);
-   fclose(priv);
 }
