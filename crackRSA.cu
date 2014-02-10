@@ -8,7 +8,7 @@
 //Main function to read keys from file and then matrix, yeah!
 int main (int argc, char * argv[]) {
    char *res, *cudaRes;
-   uint32_t *numbers, *cudaNums;
+   bigInt *numbers, *cudaNums;
    
    if (argc != 2) {
       printf("error, syntax is %s <file name>\n", argv[0]);
@@ -25,7 +25,7 @@ int main (int argc, char * argv[]) {
    
    cudaMemcpy(cudaNums, numbers, numSize, cudaMemcpyHostToDevice);
    
-   int dimBlock = SIZE*4;
+   int dimBlock = SIZE*2;
    int dimGrid = 1 + ((numKeys - 1) / dimBlock);
 
    printf("%d blocks of size %d\n", dimGrid, dimBlock);

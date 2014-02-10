@@ -1,6 +1,6 @@
 #include "gcd.h"
 
-__device__ void shiftL1(uint32_t num[]) {
+__device__ void shiftL1(bigInt num[]) {
    int flag = 0, flagn = 0;
 	for (int i = 0; i < SIZE; i++) {
 	   if (num[i] & HIGHBIT)
@@ -15,7 +15,7 @@ __device__ void shiftL1(uint32_t num[]) {
 	}
 }
 
-__device__ void shiftR1(uint32_t num[]) {
+__device__ void shiftR1(bigInt num[]) {
    int flag = 0, flagn = 0;
 	for (int i = SIZE - 1; i >= 0; i--) {
 	   if (num[i] & LOWBIT)
@@ -31,18 +31,18 @@ __device__ void shiftR1(uint32_t num[]) {
 }
 
 // returns num1 (LT,EQ,GT)? num2
-__device__ int cmp(uint32_t num1[], uint32_t num2[]) {
+__device__ int cmp(bigInt num1[], bigInt num2[]) {
    for (int i = SIZE - 1; i >= 0; i--)
 	   if (num1[i] != num2[i])
-		   return (num1[i] == min(num1[i], num2[i])) ? LT : GT;
+		   return (num1[i] < num2[i]) ? LT : GT;
 	
 	return EQ;
 }
 
 // requires that num1 >= num2, num1 -= num2
-__device__ void cuSubtract(uint32_t num1[], uint32_t num2[]) {
+__device__ void cuSubtract(bigInt num1[], bigInt num2[]) {
    for (int i = 0; i < SIZE; i++) {
-	   if (num2[i] == min(num1[i], num2[i])) {
+	   if (num2[i] <= num1[i]) {
 		   // normal subtraction
 			num1[i] = num1[i] - num2[i];
 		} else {
@@ -58,7 +58,7 @@ __device__ void cuSubtract(uint32_t num1[], uint32_t num2[]) {
 }
 
 // eulers gcd algorithm without modulus
-__device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
+__device__ void slow_gcd(bigInt num1[], bigInt num2[]) {
    int compare;
 	while ((compare = cmp(num1, num2)) != EQ) {
 	   if (compare == GT)
@@ -72,7 +72,7 @@ __device__ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
 // requires num1 > 0 and num2 > 0
 // sets either num1 or num2 to the 1 if gcd == 1 or some number >1 if gcd >1 and
 // returns the pointer to whichever num was set
-__device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
+__device__ bigInt* gcd(bigInt *num1, bigInt *num2) {
    int shift, compare;
 	
 	for (shift = 0; ((num1[0] | num2[0]) & LOWBIT) == 0; ++shift) {
@@ -91,7 +91,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		if (compare == EQ)
 		   break;
 		else if (compare == GT) {
-		   uint32_t *t = num1;
+		   bigInt *t = num1;
 			num1 = num2;
 			num2 = t;
 		}
@@ -104,7 +104,7 @@ __device__ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 	return num1;
 }
 
-__device__ bool greaterOne(uint32_t *num) {
+__device__ bool greaterOne(bigInt *num) {
 	for (int i = 0; i < SIZE; i++)
 		if (i ? num[i] : num[i] > 1)
 			return true;
@@ -115,12 +115,12 @@ __device__ bool greaterOne(uint32_t *num) {
 // res represents a 2 dimensional matrix with at least count bits for each side
 // should have count number of threads running, each responsible for 1 row/col
 // res will be return as a top diagonal matrix
-__global__ void findGCDs(uint32_t *nums, int count, char *res, int offset) {	
+__global__ void findGCDs(bigInt *nums, int count, char *res, int offset) {	
    int ndx = blockIdx.x * blockDim.x + threadIdx.x; // == offset in bits
 	int resOff = ndx * (1 + ((count - 1) / 8));
 
-	uint32_t cur[SIZE];
-	uint32_t other[SIZE];
+	bigInt cur[SIZE];
+	bigInt other[SIZE];
 	
    // do calc
    int i = ndx + offset + 1;

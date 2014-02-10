@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-int readFile(const char *fileName, uint32_t **numbers, char **res) {
+int readFile(const char *fileName, bigInt **numbers, char **res) {
    int countBytes;
    mpz_t tempNum;
    mpz_init(tempNum);
@@ -23,13 +23,13 @@ int readFile(const char *fileName, uint32_t **numbers, char **res) {
    fseek(fp, 0, SEEK_SET);
 
    countBytes = 1 + ((numKeys - 1) /8);
-   *numbers = (uint32_t *) malloc(SIZE_BYTES * numKeys);
+   *numbers = (bigInt *) malloc(SIZE_BYTES * numKeys);
    *res = (char *) calloc(numKeys, countBytes);
    
    int i;
    for (i = 0; i < numKeys; i ++) {
       gmp_fscanf(fp, "%Zd\n", &tempNum);
-      mpz_export((*numbers) + i * SIZE, NULL, -1, 4, -1, 0, tempNum);
+      mpz_export((*numbers) + i * SIZE, NULL, -1, BIGINT_SIZE, -1, 0, tempNum);
    }
    fclose(fp);
    
@@ -57,7 +57,7 @@ void computePrivate(mpz_t pb1, mpz_t pb2, mpz_t *pk1, mpz_t *pk2) {
    mpz_invert(*pk2, e, tot2);
 }
 
-void writeFiles(const char *privateFile,int numKeys,uint32_t *keys,char *res) {
+void writeFiles(const char *privateFile,int numKeys,bigInt *keys,char *res) {
 
    int i,j,k;
    mpz_t k1, k2, pk1, pk2;
@@ -76,8 +76,8 @@ void writeFiles(const char *privateFile,int numKeys,uint32_t *keys,char *res) {
                if (res[ndx] & (1 << k)) {
                   printf("Keys %d %d share a factor\n", i, j*8 + k);
 
-                  mpz_import(k1, SIZE, -1, 4, -1, 0, keys + i * SIZE);
-                  mpz_import(k2, SIZE, -1, 4, -1, 0, keys + (j*8 + k) * SIZE);
+                  mpz_import(k1, SIZE, -1, BIGINT_SIZE, -1, 0, keys + i * SIZE);
+                  mpz_import(k2, SIZE, -1, BIGINT_SIZE, -1, 0, keys + (j*8 + k) * SIZE);
                   computePrivate(k1, k2, &pk1, &pk2);
 
                   gmp_fprintf(priv, "%Zd:%Zd\n%Zd:%Zd\n", k1, pk1, k2, pk2);

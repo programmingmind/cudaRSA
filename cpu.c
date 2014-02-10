@@ -5,22 +5,22 @@
 
 #include "common.h"
 
-void shiftL1(uint32_t num[]);
-void shiftR1(uint32_t num[]);
-int cmp(uint32_t num1[], uint32_t num2[]);
-void Substract(uint32_t num1[], uint32_t num2[]);
-void slow_gcd(uint32_t num1[], uint32_t num2[]);
-uint32_t* gcd(uint32_t *num1, uint32_t *num2);
-void findGCDs(uint32_t *nums, int count, char *res, int offset);
+void shiftL1(bigInt num[]);
+void shiftR1(bigInt num[]);
+int cmp(bigInt num1[], bigInt num2[]);
+void Substract(bigInt num1[], bigInt num2[]);
+void slow_gcd(bigInt num1[], bigInt num2[]);
+bigInt* gcd(bigInt *num1, bigInt *num2);
+void findGCDs(bigInt *nums, int count, char *res, int offset);
 
-uint32_t min(uint32_t a, uint32_t b) {
+bigInt min(bigInt a, bigInt b) {
 	return a < b ? a : b;
 }
 
 //Main function to read keys from file and then matrix, yeah!
 int main (int argc, char * argv[]) {
    char *res;
-   uint32_t *numbers;
+   bigInt *numbers;
    
    if (argc != 2) {
       printf("error, syntax is %s <file name>\n", argv[0]);
@@ -41,7 +41,7 @@ int main (int argc, char * argv[]) {
    return 0;
 }
 
-void shiftL1(uint32_t num[]) {
+void shiftL1(bigInt num[]) {
    int flag = 0, flagn = 0;
 	for (int i = 0; i < SIZE; i++) {
 	   if (num[i] & HIGHBIT)
@@ -56,7 +56,7 @@ void shiftL1(uint32_t num[]) {
 	}
 }
 
-void shiftR1(uint32_t num[]) {
+void shiftR1(bigInt num[]) {
    int flag = 0, flagn = 0;
 	for (int i = SIZE - 1; i >= 0; i--) {
 	   if (num[i] & LOWBIT)
@@ -72,7 +72,7 @@ void shiftR1(uint32_t num[]) {
 }
 
 // returns num1 (LT,EQ,GT)? num2
-int cmp(uint32_t num1[], uint32_t num2[]) {
+int cmp(bigInt num1[], bigInt num2[]) {
    for (int i = SIZE - 1; i >= 0; i--)
 	   if (num1[i] != num2[i])
 		   return (num1[i] == min(num1[i], num2[i])) ? LT : GT;
@@ -81,7 +81,7 @@ int cmp(uint32_t num1[], uint32_t num2[]) {
 }
 
 // requires that num1 >= num2, num1 -= num2
-void Subtract(uint32_t num1[], uint32_t num2[]) {
+void Subtract(bigInt num1[], bigInt num2[]) {
    for (int i = 0; i < SIZE; i++) {
 	   if (num2[i] == min(num1[i], num2[i])) {
 		   // normal subtraction
@@ -99,7 +99,7 @@ void Subtract(uint32_t num1[], uint32_t num2[]) {
 }
 
 // eulers gcd algorithm without modulus
-void slow_gcd(uint32_t num1[], uint32_t num2[]) {
+void slow_gcd(bigInt num1[], bigInt num2[]) {
    int compare;
 	while ((compare = cmp(num1, num2)) != EQ) {
 	   if (compare == GT)
@@ -113,7 +113,7 @@ void slow_gcd(uint32_t num1[], uint32_t num2[]) {
 // requires num1 > 0 and num2 > 0
 // sets either num1 or num2 to the 1 if gcd == 1 or some number >1 if gcd >1 and
 // returns the pointer to whichever num was set
-uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
+bigInt* gcd(bigInt *num1, bigInt *num2) {
    int shift, compare;
 	
 	for (shift = 0; ((num1[0] | num2[0]) & LOWBIT) == 0; ++shift) {
@@ -132,7 +132,7 @@ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 		if (compare == EQ)
 		   break;
 		else if (compare == GT) {
-		   uint32_t *t = num1;
+		   bigInt *t = num1;
 			num1 = num2;
 			num2 = t;
 		}
@@ -145,7 +145,7 @@ uint32_t* gcd(uint32_t *num1, uint32_t *num2) {
 	return num1;
 }
 
-int greaterOne(uint32_t *num) {
+int greaterOne(bigInt *num) {
 	for (int i = 0; i < SIZE; i++)
 		if (i ? num[i] : num[i] > 1)
 			return 1;
@@ -156,9 +156,9 @@ int greaterOne(uint32_t *num) {
 // res represents a 2 dimensional matrix with at least count bits for each side
 // should have count number of threads running, each responsible for 1 row/col
 // res will be return as a top diagonal matrix
-void findGCDs(uint32_t *nums, int count, char *res, int offset) {	
-   uint32_t cur[SIZE];
-	uint32_t other[SIZE];
+void findGCDs(bigInt *nums, int count, char *res, int offset) {	
+   bigInt cur[SIZE];
+	bigInt other[SIZE];
 
 	for (int ndx = 0; ndx < count; ndx++) {
 		int resOff = ndx * (1 + ((count - 1) / 8));

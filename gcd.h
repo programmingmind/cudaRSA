@@ -5,6 +5,6 @@
 
 #include "common.h"
 
-__global__ void findGCDs(uint32_t *nums, int count, char *res, int offset);
+__global__ void findGCDs(bigInt *nums, int count, char *res, int offset);
 
 #endif
