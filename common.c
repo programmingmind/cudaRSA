@@ -87,5 +87,5 @@ void writeFiles(const char *privateFile,int numKeys,uint32_t *keys,char *res) {
       }
    }
 
-   fclose(pub);
+   fclose(priv);
 }
