@@ -126,8 +126,8 @@ __global__ void findGCDs(uint32_t *nums, int count, char *res, int offset) {
    int i = ndx + offset + 1;
    int limit = min(i + WORK_SIZE, count);
 	for (; i < limit; i++) {
-		memcpy(cur, nums + ndx * SIZE_BYTES, SIZE_BYTES);
-		memcpy(other, nums + i * SIZE_BYTES, SIZE_BYTES);
+		memcpy(cur, nums + ndx * SIZE, SIZE_BYTES);
+		memcpy(other, nums + i * SIZE, SIZE_BYTES);
 		
 		if (greaterOne(gcd(cur, other)))
 			res[resOff + i / 8] |= 1 << (i % 8);
