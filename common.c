@@ -6,20 +6,6 @@
 
 #include "common.h"
 
-void printCommon(int numKeys, char *res) {
-   int i,j,k;
-
-   int countBytes = 1 + ((numKeys - 1) /8);
-   int ndx = 0;
-   
-   for (i = 0; i < numKeys; i++)
-      for (j = 0; j < countBytes; j++, ndx++)
-         if (res[ndx])
-            for (k = 0; k < 8; k++)
-               if (res[ndx] & (1 << k))
-                  printf("Keys %d %d share a factor\n", i, j*8 + k);
-}
-
 int readFile(const char *fileName, uint32_t **numbers, char **res) {
    int countBytes;
    mpz_t tempNum;
@@ -90,7 +76,8 @@ void writeFiles(const char *publicFile, const char *privateFile, int numKeys,
          if (res[ndx]) {
             for (k = 0; k < 8; k++) {
                if (res[ndx] & (1 << k)) {
-                  // i, j*8 + k
+                  printf("Keys %d %d share a factor\n", i, j*8 + k);
+
                   mpz_import(k1, SIZE, -1, 4, -1, 0, keys + i * SIZE);
                   mpz_import(k2, SIZE, -1, 4, -1, 0, keys + (j*8 + k) * SIZE);
                   computePrivate(k1, k2, &pk1, &pk2);

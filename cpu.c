@@ -32,8 +32,6 @@ int main (int argc, char * argv[]) {
    //Lets gcd
    for (int offset = 0;  offset < numKeys; offset += WORK_SIZE)
    	findGCDs(numbers, numKeys, res, offset);
-   
-   printCommon(numKeys, res);
 
    writeFiles("publicKeys", "privateKeys", numKeys, numbers, res);
 

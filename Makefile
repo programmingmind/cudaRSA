@@ -2,22 +2,24 @@ NVFLAGS=-O3 -g -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code
 CCFLAGS=-O3 -std=c99
 
 # list .c and .cu source files here
-CUDAFILES=gcd.cu crackRSA.cu common.c
-CPUFILES=cpu.c common.c
+CUDAFILES=gcd.cu crackRSA.cu
+CUDAOBJS=$(CUDAFILES:.cu=.o)
+COMMON=common.c
+CPUFILES=cpu.c
 LDFLAGS=-lgmp
 LIBPATH=/home/clupo/gmp/lib
 INCPATH=/home/clupo/gmp/include
 
-cuda: $(CUDAFILES) 
-	nvcc $(NVFLAGS) -o rsa_cuda $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Xlinker -rpath -Xlinker $(LIBPATH)
+cuda: $(COMMON) $(CUDAOBJS)
+	g++ -O3 -o rsa_cuda $^ -L$(LIBPATH) -L/usr/local/cuda/lib64 -I$(INCPATH) -lcuda -lcudart $(LDFLAGS) -Wl,-rpath=$(LIBPATH)
 
-cudaHome: $(CUDAFILES)
-	nvcc $(NVFLAGS) -o rsa_cuda $^ $(LDFLAGS) 
+%.o: %.cu
+	nvcc -c $(NVFLAGS) $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Xlinker -rpath -Xlinker $(LIBPATH) 
 
-cpu: $(CPUFILES) 
+cpu: $(CPUFILES) $(COMMON)
 	gcc $(CCFLAGS) -o rsa_cpu $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Wl,-rpath=$(LIBPATH)
 
-cpuHome: $(CPUFILES) 
+cpuHome: $(CPUFILES) $(COMMON)
 	gcc $(CCFLAGS) -o rsa_cpu $^ $(LDFLAGS)
 
 clean: 

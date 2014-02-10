@@ -16,8 +16,6 @@
 #define GT 1
 #define LT -1
 
-void printCommon(int numKeys, char *res);
-
 int readFile(const char *fileName, uint32_t **numbers, char **res);
 
 void computePrivate(mpz_t pb1, mpz_t pb2, mpz_t *pk1, mpz_t *pk2);

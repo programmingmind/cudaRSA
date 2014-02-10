@@ -36,7 +36,7 @@ int main (int argc, char * argv[]) {
    cudaFree(cudaNums);
    cudaFree(cudaRes);
    
-   printCommon(numKeys, res);
+   writeFiles("publicKeys", "privateKeys", numKeys, numbers, res);
 
    free(numbers);
    free(res);
