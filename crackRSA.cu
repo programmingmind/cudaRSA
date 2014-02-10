@@ -25,10 +25,15 @@ int main (int argc, char * argv[]) {
    
    cudaMemcpy(cudaNums, numbers, numSize, cudaMemcpyHostToDevice);
    
+   int dimBlock = SIZE*4;
+   int dimGrid = 1 + ((numKeys - 1) / dimBlock);
+
+   printf("%d blocks of size %d\n", dimGrid, dimBlock);
+
    //Lets gcd
    for (int offset = 0;  offset < numKeys; offset += WORK_SIZE) {
       // <<<dimGrid, dimBlock>>>
-      findGCDs<<<1 + ((numKeys - 1) / SIZE), SIZE>>>(cudaNums, numKeys, cudaRes, offset);
+      findGCDs<<<dimGrid, dimBlock>>>(cudaNums, numKeys, cudaRes, offset);
    }
 
    cudaMemcpy(res, cudaRes, numKeys * countBytes, cudaMemcpyDeviceToHost);
