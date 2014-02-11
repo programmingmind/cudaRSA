@@ -51,12 +51,12 @@ int main (int argc, char * argv[]) {
    int numKeys = readFile(argv[1], &numbers, &res);
    
    //Lets gcd
+	#ifdef GMP
+   gmpGCDs(numbers, numKeys, res);
+   #else
    for (int offset = 0;  offset < numKeys; offset += WORK_SIZE)
-   	#ifdef GMP
-   	gmpGCDs(numbers, numKeys, res);
-   	#else
    	findGCDs(numbers, numKeys, res, offset);
-   	#endif
+   #endif
 
    writeFiles("privateKeys", numKeys, numbers, res);
 
