@@ -1,0 +1,24 @@
+Donovan McKelvey - 419
+Robbie Campbell - 556
+
+This program finds keys that share common factors in a given list of 1024 bit
+public keys. Once it finds these common keys, it finds the associated private
+keys for the matching public keys and writes them to a file called privateKeys.
+
+There are multiple versions of the file that can be compiled separately using
+the packaged Makefile
+
+make cuda -- compiles the version of the program that runs with cuda on the gpu
+   Creates the file rsa_cuda
+
+make cpu -- compiles the version of the program that runs on the cpu and finds
+   GCDs using binary division. Creates the file rsa_cpu
+
+make cpu_gmp -- compiles the version of the program that runs on the cpu and
+   finds GCDs using the gmp library. Creates the file rsa_cpu
+
+Usage: ./<executable name> <file containing public keys>
+
+The program will output information during runtime of how many keys are in the
+file, as well as which line numbers contain keys with common prime factors.
+
