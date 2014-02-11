@@ -20,11 +20,11 @@ void gmpGCDs(bigInt *nums, int count, char *res) {
 
 	for (int ndx = 0; ndx < count; ndx++) {
 		int resOff = ndx * (1 + ((count - 1) / 8));
-		mpz_import(cur, SIZE, -1, BIGINT_SIZE, -1, 0, keys + ndx * SIZE);
+		mpz_import(cur, SIZE, -1, BIGINT_SIZE, -1, 0, nums + ndx * SIZE);
 
 		// do calc
 		for (int i = ndx + 1; i < count; i++) {
-			mpz_import(other, SIZE, -1, BIGINT_SIZE, -1, 0, keys + i * SIZE);
+			mpz_import(other, SIZE, -1, BIGINT_SIZE, -1, 0, nums + i * SIZE);
 
 			mpz_gcd(g, cur, other);
 			
