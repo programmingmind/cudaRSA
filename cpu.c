@@ -1,3 +1,4 @@
+#include <gmp.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,26 @@ void Substract(bigInt num1[], bigInt num2[]);
 void slow_gcd(bigInt num1[], bigInt num2[]);
 bigInt* gcd(bigInt *num1, bigInt *num2);
 void findGCDs(bigInt *nums, int count, char *res, int offset);
+
+void gmpGCDs(bigInt *nums, int count, char *res) {	
+   mpz_t cur, other, g;
+   mpz_inits(cur, other, g, NULL);
+
+	for (int ndx = 0; ndx < count; ndx++) {
+		int resOff = ndx * (1 + ((count - 1) / 8));
+		mpz_import(cur, SIZE, -1, BIGINT_SIZE, -1, 0, keys + ndx * SIZE);
+
+		// do calc
+		for (int i = ndx + 1; i < count; i++) {
+			mpz_import(other, SIZE, -1, BIGINT_SIZE, -1, 0, keys + i * SIZE);
+
+			mpz_gcd(g, cur, other);
+			
+			if (mpz_cmp_ui(g, 1) > 1)
+				res[resOff + i / 8] |= 1 << (i % 8);
+		}
+	}  
+}
 
 bigInt min(bigInt a, bigInt b) {
 	return a < b ? a : b;
@@ -31,7 +52,11 @@ int main (int argc, char * argv[]) {
    
    //Lets gcd
    for (int offset = 0;  offset < numKeys; offset += WORK_SIZE)
+   	#ifdef GMP
+   	gmpGCDs(numbers, numKeys, res);
+   	#else
    	findGCDs(numbers, numKeys, res, offset);
+   	#endif
 
    writeFiles("privateKeys", numKeys, numbers, res);
 
