@@ -28,7 +28,7 @@ void gmpGCDs(bigInt *nums, int count, char *res) {
 
 			mpz_gcd(g, cur, other);
 			
-			if (mpz_cmp_ui(g, 1) > 1)
+			if (mpz_cmp_ui(g, 1) > 0)
 				res[resOff + i / 8] |= 1 << (i % 8);
 		}
 	}  
