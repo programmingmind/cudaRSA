@@ -19,6 +19,9 @@ cuda: $(COMMON) $(CUDAOBJS)
 cpu: $(CPUFILES) $(COMMON)
 	gcc $(CCFLAGS) -o rsa_cpu $^ -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Wl,-rpath=$(LIBPATH)
 
+cpu_gmp: $(CPUFILES) $(COMMON)
+	gcc $(CCFLAGS) -o rsa_cpu $^ -DGMP -L$(LIBPATH) -I$(INCPATH) $(LDFLAGS) -Wl,-rpath=$(LIBPATH)
+
 cpuHome: $(CPUFILES) $(COMMON)
 	gcc $(CCFLAGS) -o rsa_cpu $^ $(LDFLAGS)
 
